@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OmniCut Studio | Open-Source AI Video Editor & Instruction Engine</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Top App Navigation Bar -->
+  <header class="app-header">
+    <div class="logo-group">
+      <span class="logo-badge">OMNICUT</span>
+      <h1 class="app-title">Studio AI <span class="version-tag">v2.0 Master</span></h1>
+    </div>
+
+    <!-- Center: Aspect Ratio Toggle -->
+    <div class="header-center">
+      <div class="ratio-btn-group">
+        <button class="ratio-btn active" data-ratio="9:16">9:16 Shorts</button>
+        <button class="ratio-btn" data-ratio="16:9">16:9 Landscape</button>
+        <button class="ratio-btn" data-ratio="1:1">1:1 Square</button>
+      </div>
+    </div>
+
+    <!-- Right Header Actions -->
+    <div class="header-actions">
+      <input type="file" id="videoUploadInput" accept="video/*" style="display: none;">
+      <button class="btn btn-secondary" id="btnUploadVideo">
+        <span>📁 Load Video</span>
+      </button>
+
+      <input type="file" id="jsonUploadInput" accept=".json" style="display: none;">
+      <button class="btn btn-secondary" id="btnLoadJSON">
+        <span>⚡ Import JSON</span>
+      </button>
+
+      <button class="btn btn-primary" id="btnExportJSON">
+        <span>💾 Save Recipe</span>
+      </button>
+
+      <button class="btn btn-export" id="btnExportModal">
+        <span>🚀 Render & Export</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Split Layout -->
+  <main class="workspace-container">
+    
+    <!-- Left Sidebar: Controls & Inspector -->
+    <aside class="sidebar-panel">
+      <!-- Tabs Navigation -->
+      <nav class="sidebar-tabs">
+        <button class="tab-btn active" data-tab="instructions">📋 Recipe JSON</button>
+        <button class="tab-btn" data-tab="voiceover">🎙️ TTS Voice</button>
+        <button class="tab-btn" data-tab="captions">💬 Captions</button>
+        <button class="tab-btn" data-tab="ducking">🔊 Ducking</button>
+        <button class="tab-btn" data-tab="face">🎭 Face Blur</button>
+        <button class="tab-btn" data-tab="watermark">💧 Watermark</button>
+      </nav>
+
+      <!-- Tab 1: Instruction JSON Engine -->
+      <div class="tab-content active" id="tab-instructions">
+        <div class="panel-title">
+          <span>Instruction Recipe</span>
+          <select id="presetSelect" class="form-control" style="width: 140px; padding: 4px;">
+            <option value="dylan">Dylan Storyteller</option>
+            <option value="meme">Fast TikTok Cut</option>
+            <option value="privacy">Face Privacy Blur</option>
+          </select>
+        </div>
+        <p class="panel-desc">Paste or edit your instruction JSON below. Click "Execute Recipe" to sync all tracks, timestamps, and audio ducking instantly.</p>
+
+        <div class="form-group">
+          <textarea id="jsonEditor" class="form-control json-editor-area" spellcheck="false"></textarea>
+        </div>
+
+        <div style="display: flex; gap: 8px;">
+          <button class="btn btn-primary" id="btnApplyJSON" style="flex: 1;">
+            <span>▶ Execute Recipe</span>
+          </button>
+          <button class="btn btn-secondary" id="btnResetJSON">Reset</button>
+        </div>
+      </div>
+
+      <!-- Tab 2: Voiceover / TTS -->
+      <div class="tab-content" id="tab-voiceover">
+        <h3 class="panel-title">Voiceover Generator</h3>
+        <p class="panel-desc">Generate narrative commentary using broadcast voice profiles or browser speech synthesis.</p>
+
+        <div class="form-group">
+          <label>Speaker Model</label>
+          <select id="voVoiceSelect" class="form-control">
+            <option value="am_eric">am_eric (Kokoro - Warm Broadcaster)</option>
+            <option value="am_adam">am_adam (Kokoro - Energetic Male)</option>
+            <option value="af_heart">af_heart (Kokoro - Warm Storyteller)</option>
+            <option value="browser">Browser Native Speech Synthesis</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Timestamp Placement (seconds)</label>
+          <input type="number" id="voTimestamp" class="form-control" value="0.5" step="0.1" min="0">
+        </div>
+
+        <div class="form-group">
+          <label>Script Text</label>
+          <textarea id="voText" class="form-control" rows="3" placeholder="Enter narration script..."></textarea>
+        </div>
+
+        <button class="btn btn-primary" id="btnAddVO" style="width: 100%;">
+          <span>+ Add Voiceover to Timeline</span>
+        </button>
+
+        <div style="margin-top: 16px;">
+          <label style="font-size: 11px; font-weight: bold; color: var(--text-secondary);">ACTIVE VOICEOVER CLIPS</label>
+          <div id="voList" style="margin-top: 8px; display: flex; flex-direction: column; gap: 6px;"></div>
+        </div>
+      </div>
+
+      <!-- Tab 3: Kinetic Captions -->
+      <div class="tab-content" id="tab-captions">
+        <h3 class="panel-title">Kinetic Subtitles</h3>
+        <p class="panel-desc">Dynamic animated captions with word-by-word highlights and pop animation.</p>
+
+        <div class="form-group">
+          <label>Animation Style</label>
+          <select id="captionAnimSelect" class="form-control">
+            <option value="pop_bounce">Pop & Scale Bounce (Viral)</option>
+            <option value="glow">Neon Glow Pulse</option>
+            <option value="typewriter">Typewriter Reveal</option>
+            <option value="karaoke">Karaoke Highlight</option>
+          </select>
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+          <div class="form-group" style="flex: 1;">
+            <label>Highlight Color</label>
+            <input type="color" id="captionHighlightColor" class="form-control" value="#FFDF00" style="height: 36px; padding: 2px;">
+          </div>
+          <div class="form-group" style="flex: 1;">
+            <label>Font Size</label>
+            <input type="number" id="captionFontSize" class="form-control" value="38" min="16" max="90">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Caption Text Preview</label>
+          <input type="text" id="captionSampleInput" class="form-control" value="When this little girl couldn't reach the hoop...">
+        </div>
+      </div>
+
+      <!-- Tab 4: Audio Ducking -->
+      <div class="tab-content" id="tab-ducking">
+        <h3 class="panel-title">Smart Audio Ducking</h3>
+        <p class="panel-desc">Automatically lowers original background video audio while the voiceover is speaking, restoring full volume for live reactions.</p>
+
+        <div class="form-group">
+          <label>Ducked Volume Level</label>
+          <input type="range" id="duckLevelSlider" min="0" max="1" step="0.05" value="0.25" style="width: 100%;">
+          <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-secondary); margin-top: 4px;">
+            <span>0% (Muted)</span>
+            <span id="duckLevelLabel">25% (-12 dB)</span>
+            <span>100% (No Duck)</span>
+          </div>
+        </div>
+
+        <div id="duckingRulesContainer" style="margin-top: 14px; display: flex; flex-direction: column; gap: 8px;"></div>
+      </div>
+
+      <!-- Tab 5: Face Tracking & Privacy -->
+      <div class="tab-content" id="tab-face">
+        <h3 class="panel-title">Face Tracking & Blur</h3>
+        <p class="panel-desc">Automatic face detection with tracking blur, mosaic pixelation, or stickers.</p>
+
+        <div class="form-group">
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+            <input type="checkbox" id="chkEnableFace">
+            <span>Enable Face Tracking</span>
+          </label>
+        </div>
+
+        <div class="form-group">
+          <label>Blur Mode</label>
+          <select id="faceBlurMode" class="form-control">
+            <option value="gaussian">Gaussian Soft Blur</option>
+            <option value="pixelate">Pixelated Mosaic</option>
+            <option value="censor">Black Censor Bar</option>
+            <option value="emoji">Funny Emoji Mask</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Blur Radius</label>
+          <input type="range" id="faceBlurRadius" min="5" max="40" value="18" style="width: 100%;">
+        </div>
+      </div>
+
+      <!-- Tab 6: Watermark Remover -->
+      <div class="tab-content" id="tab-watermark">
+        <h3 class="panel-title">Watermark Cover</h3>
+        <p class="panel-desc">Define a tracked blur box over logos, usernames, or moving watermark text.</p>
+
+        <div class="form-group">
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+            <input type="checkbox" id="chkEnableWatermark" checked>
+            <span>Enable Watermark Mask</span>
+          </label>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <div class="form-group">
+            <label>X Position (%)</label>
+            <input type="number" id="wmX" class="form-control" value="72" min="0" max="100">
+          </div>
+          <div class="form-group">
+            <label>Y Position (%)</label>
+            <input type="number" id="wmY" class="form-control" value="4" min="0" max="100">
+          </div>
+          <div class="form-group">
+            <label>Width (%)</label>
+            <input type="number" id="wmW" class="form-control" value="25" min="1" max="100">
+          </div>
+          <div class="form-group">
+            <label>Height (%)</label>
+            <input type="number" id="wmH" class="form-control" value="6" min="1" max="100">
+          </div>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- Center Stage: Player & Live Canvas -->
+    <section class="viewport-panel">
+      <div class="player-stage">
+        <div class="player-box ratio-9-16" id="playerWrapper">
+          <video id="mainVideo" playsinline></video>
+          <canvas id="overlayCanvas"></canvas>
+        </div>
+      </div>
+
+      <!-- Playback Transport Bar -->
+      <div class="player-controls-bar">
+        <div class="transport-buttons">
+          <button class="icon-btn" id="btnPrevFrame" title="Previous Frame">⏮</button>
+          <button class="icon-btn play-pause-btn" id="btnPlayPause" title="Play / Pause">▶</button>
+          <button class="icon-btn" id="btnNextFrame" title="Next Frame">⏭</button>
+          <button class="icon-btn" id="btnMuteToggle" title="Mute Toggle">🔊</button>
+        </div>
+
+        <div class="timecode-display" id="timecodeDisplay">00:00.00 / 00:00.00</div>
+      </div>
+
+      <!-- Timeline & Multi-Track Scrubber -->
+      <div class="timeline-panel">
+        <div class="timeline-toolbar">
+          <div class="timeline-tool-group">
+            <span style="font-size: 11px; font-weight: bold; color: var(--text-secondary);">TIMELINE TRACKS</span>
+          </div>
+          <div class="zoom-slider-wrap">
+            <span>Timeline Zoom</span>
+            <input type="range" id="timelineZoom" min="15" max="80" value="35">
+          </div>
+        </div>
+
+        <div class="tracks-container" id="tracksContainer">
+          <!-- Playhead needle -->
+          <div class="playhead-needle" id="playhead"></div>
+
+          <!-- Ruler -->
+          <div class="ruler-bar" id="rulerBar"></div>
+
+          <!-- Track 1: Video -->
+          <div class="track-row" id="videoTrackRow">
+            <div class="track-header">🎬 Video Track</div>
+            <div class="track-content" id="trackVideoContent"></div>
+          </div>
+
+          <!-- Track 2: Audio Ducking -->
+          <div class="track-row" id="duckingTrackRow">
+            <div class="track-header">🔊 Ducking</div>
+            <div class="track-content" id="trackDuckingContent"></div>
+          </div>
+
+          <!-- Track 3: Voiceover -->
+          <div class="track-row" id="voTrackRow">
+            <div class="track-header">🎙️ Voiceover</div>
+            <div class="track-content" id="trackVoContent"></div>
+          </div>
+
+          <!-- Track 4: Captions -->
+          <div class="track-row" id="captionsTrackRow">
+            <div class="track-header">💬 Captions</div>
+            <div class="track-content" id="trackCaptionsContent"></div>
+          </div>
+
+          <!-- Track 5: Effects -->
+          <div class="track-row" id="effectsTrackRow">
+            <div class="track-header">✨ Effects</div>
+            <div class="track-content" id="trackEffectsContent"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Export Modal -->
+  <div class="modal-overlay" id="exportModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">Export Master Video</h3>
+        <button class="close-modal-btn" id="btnCloseModal">✕</button>
+      </div>
+
+      <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">
+        Choose your preferred export pipeline:
+      </p>
+
+      <div style="background: var(--bg-primary); padding: 14px; border-radius: 8px; margin-bottom: 14px; border: 1px solid var(--border-color);">
+        <h4 style="font-size: 13px; font-weight: 700; margin-bottom: 4px;">Option 1: In-Browser Instant Render</h4>
+        <p style="font-size: 11px; color: var(--text-secondary); margin-bottom: 10px;">Renders canvas effects, dynamic audio ducking, and kinetic subtitles directly to a downloadable file.</p>
+        <button class="btn btn-export" id="btnStartBrowserRender" style="width: 100%; justify-content: center;">
+          <span>⚡ Render Video in Browser</span>
+        </button>
+        <div id="renderProgressText" style="font-size: 11px; color: var(--accent-cyan); margin-top: 8px; display: none;">Rendering frames...</div>
+      </div>
+
+      <div style="background: var(--bg-primary); padding: 14px; border-radius: 8px; border: 1px solid var(--border-color);">
+        <h4 style="font-size: 13px; font-weight: 700; margin-bottom: 4px;">Option 2: Lossless 4K Local CLI (Python / FFmpeg)</h4>
+        <p style="font-size: 11px; color: var(--text-secondary); margin-bottom: 6px;">Run this command in your terminal using the bundled <code style="color: var(--accent-cyan);">engine.py</code> script with Kokoro TTS:</p>
+        <div class="code-box" id="ffmpegCodeBox">python engine.py --video input.mp4 --instructions instructions.json --output master.mp4</div>
+        <button class="btn btn-secondary" id="btnCopyFFmpegCmd" style="width: 100%; justify-content: center;">
+          <span>📋 Copy Terminal Command</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
