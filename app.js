@@ -17,34 +17,34 @@ const STARTER_SCHEMA = {
       voice: "am_eric",
       speed: 1.05,
       volume: 1.2,
-      text: "When this little girl was having trouble reaching the basketball hoop, her older brother stepped in."
+      text: "Enter your opening commentary or story hook here."
     },
     {
-      timestamp_sec: 12.0,
+      timestamp_sec: 8.0,
       voice: "am_eric",
       speed: 1.05,
       volume: 1.2,
-      text: "He lifted her up so she could make the winning shot, proving older brothers really are the best."
+      text: "Enter your key narrative, punchline, or concluding takeaway here."
     }
   ],
   audio_ducking: [
     {
       start_sec: 0.0,
-      end_sec: 6.5,
+      end_sec: 6.0,
       original_volume: 0.25,
-      description: "Duck background volume during opening commentary hook"
+      description: "Duck background video volume during opening voiceover"
     },
     {
-      start_sec: 6.5,
-      end_sec: 11.5,
+      start_sec: 6.0,
+      end_sec: 8.0,
       original_volume: 1.0,
-      description: "Full volume for cheering and crowd sound"
+      description: "Restore 100% full original video audio during natural action"
     },
     {
-      start_sec: 11.5,
-      end_sec: 18.0,
+      start_sec: 8.0,
+      end_sec: 14.0,
       original_volume: 0.25,
-      description: "Duck background volume during closing commentary"
+      description: "Duck background video volume during closing voiceover"
     }
   ],
   captions: {
@@ -59,13 +59,13 @@ const STARTER_SCHEMA = {
     segments: [
       {
         start_sec: 0.5,
-        end_sec: 6.5,
-        text: "When this little girl couldn't reach the hoop..."
+        end_sec: 6.0,
+        text: "Enter your opening commentary or story hook here."
       },
       {
-        start_sec: 12.0,
-        end_sec: 18.0,
-        text: "Her older brother gave her a moment she'd never forget."
+        start_sec: 8.0,
+        end_sec: 14.0,
+        text: "Enter your key narrative, punchline, or concluding takeaway here."
       }
     ]
   },
@@ -73,11 +73,11 @@ const STARTER_SCHEMA = {
     watermark_removal: [
       {
         start_sec: 0.0,
-        end_sec: 20.0,
+        end_sec: 15.0,
         x_percent: 70,
         y_percent: 5,
-        width_percent: 26,
-        height_percent: 7,
+        width_percent: 25,
+        height_percent: 8,
         mode: "mosaic"
       }
     ],
@@ -786,8 +786,7 @@ function setupTimelineScrubbing() {
   function seekAtMouse(clientX) {
     if (state.videoDuration <= 0) return;
     const rect = rulerBarEl.getBoundingClientRect();
-    const scrollLeft = tracksContainer.scrollLeft;
-    const clickX = clientX - rect.left + scrollLeft - 110;
+    const clickX = clientX - rect.left - 110;
     if (clickX >= 0) {
       const sec = Math.max(0, Math.min(state.videoDuration, clickX / state.zoomPixelsPerSec));
       videoEl.currentTime = sec;

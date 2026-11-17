@@ -363,23 +363,45 @@ html, body {
   cursor: default;
 }
 
-/* Player Controls Bar */
-.player-controls-bar {
-  height: 44px;
-  min-height: 44px;
-  background: var(--bg-secondary);
-  border-top: 1px solid var(--border-color);
+/* Master Timeline & Transport Toolbar */
+.timeline-master-toolbar {
+  height: 40px;
+  min-height: 40px;
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 14px;
+  padding: 0 12px;
+  flex-shrink: 0;
+  gap: 12px;
+}
+
+.toolbar-left-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.toolbar-center-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.toolbar-right-group {
+  display: flex;
+  align-items: center;
+  gap: 14px;
   flex-shrink: 0;
 }
 
 .transport-buttons {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .icon-btn {
@@ -390,17 +412,18 @@ html, body {
   cursor: pointer;
   padding: 5px 8px;
   border-radius: 4px;
+  transition: all 0.2s;
 }
 
 .icon-btn:hover {
-  background: var(--bg-tertiary);
+  background: #283144;
 }
 
 .play-pause-btn {
   background: var(--accent-cyan);
   color: #030c1a;
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -410,7 +433,8 @@ html, body {
 }
 
 .play-pause-btn:hover {
-  filter: brightness(1.15);
+  filter: brightness(1.2);
+  transform: scale(1.05);
 }
 
 .timecode-display {
@@ -419,16 +443,58 @@ html, body {
   font-weight: 600;
   color: #fff;
   background: var(--bg-primary);
-  padding: 3px 8px;
+  padding: 4px 8px;
   border-radius: 4px;
   border: 1px solid var(--border-color);
+  letter-spacing: 0.5px;
+}
+
+.timeline-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-right: 2px;
+}
+
+.audio-ducking-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.ducking-pill {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 12px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.ducking-pill.active {
+  background: rgba(234, 179, 8, 0.15);
+  border-color: var(--accent-yellow);
+  color: var(--accent-yellow);
+}
+
+.timeline-zoom-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 /* Timeline Panel - FIXED HEIGHT & ALWAYS VISIBLE */
 .timeline-panel {
-  height: 210px;
-  min-height: 210px;
-  max-height: 210px;
+  height: 230px;
+  min-height: 230px;
+  max-height: 230px;
   background: var(--bg-secondary);
   border-top: 1px solid var(--border-color);
   display: flex;
@@ -437,53 +503,14 @@ html, body {
   z-index: 40;
 }
 
-.timeline-toolbar {
-  height: 32px;
-  min-height: 32px;
-  background: var(--bg-tertiary);
-  border-bottom: 1px solid var(--border-color);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 10px;
-  flex-shrink: 0;
-}
-
-.timeline-tool-group {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.timeline-btn {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  color: var(--text-secondary);
-  padding: 3px 8px;
-  font-size: 11px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.timeline-btn:hover {
-  color: #fff;
-  background: #283144;
-}
-
-.zoom-slider-wrap {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 11px;
-  color: var(--text-secondary);
-}
-
-.tracks-container {
+/* Tracks Scroll Area (CONTAINS THE PLAYHEAD TO AVOID SCREEN BLEED) */
+.tracks-scroll-area {
   flex: 1;
   position: relative;
   overflow-x: auto;
   overflow-y: auto;
   background: var(--track-bg);
+  min-height: 0;
 }
 
 .ruler-bar {
@@ -507,13 +534,14 @@ html, body {
   padding-top: 2px;
 }
 
+/* Playhead Needle (STRICTLY CONFINED INSIDE .tracks-scroll-area) */
 .playhead-needle {
   position: absolute;
   top: 0;
   bottom: 0;
   width: 2px;
   background: var(--accent-red);
-  z-index: 60;
+  z-index: 50;
   pointer-events: auto;
   cursor: ew-resize;
   left: 110px;

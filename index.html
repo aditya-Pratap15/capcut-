@@ -321,42 +321,45 @@
         </div>
       </div>
 
-      <!-- Playback Transport Bar -->
-      <div class="player-controls-bar">
-        <div class="transport-buttons">
-          <button class="icon-btn" id="btnPrevFrame" title="Previous Frame">⏮</button>
-          <button class="icon-btn play-pause-btn" id="btnPlayPause" title="Play / Pause">▶</button>
-          <button class="icon-btn" id="btnNextFrame" title="Next Frame">⏭</button>
-          <button class="icon-btn" id="btnMuteToggle" title="Mute Toggle">🔊</button>
-        </div>
-
-        <div class="timecode-display" id="timecodeDisplay">00:00.0 / 00:00.0</div>
-
-        <div class="audio-ducking-indicator">
-          <span>Ducking:</span>
-          <div class="ducking-pill" id="duckingPill">100% Vol</div>
-        </div>
-      </div>
-
       <!-- Multi-Track Timeline Panel -->
       <div class="timeline-panel">
-        <div class="timeline-toolbar">
-          <div class="timeline-tools-left">
-            <span class="timeline-title">Multi-Track Timeline</span>
+        <div class="timeline-master-toolbar">
+          <!-- Left: Playback Transport & Timecode -->
+          <div class="toolbar-left-group">
+            <div class="transport-buttons">
+              <button class="icon-btn" id="btnPrevFrame" title="Previous Frame (Left Arrow)">⏮</button>
+              <button class="icon-btn play-pause-btn" id="btnPlayPause" title="Play / Pause (Spacebar)">▶</button>
+              <button class="icon-btn" id="btnNextFrame" title="Next Frame (Right Arrow)">⏭</button>
+              <button class="icon-btn" id="btnMuteToggle" title="Mute Toggle">🔊</button>
+            </div>
+            <div class="timecode-display" id="timecodeDisplay">00:00.0 / 00:00.0</div>
+          </div>
+
+          <!-- Center: Editing Tools -->
+          <div class="toolbar-center-group">
+            <span class="timeline-title">Timeline</span>
             <button class="btn btn-secondary btn-sm" id="btnTimelineSplit" title="Split clip at playhead">✂️ Split</button>
             <button class="btn btn-secondary btn-sm" id="btnTimelineSnap" title="Toggle magnetic snapping">🧲 Snap: ON</button>
             <button class="btn btn-secondary btn-sm" id="btnClearVO" title="Clear all voiceover clips">🗑️ Clear VO</button>
           </div>
-          <div class="timeline-zoom-controls">
-            <button class="icon-btn" id="btnZoomOut" title="Zoom Out Timeline">-</button>
-            <span style="font-size: 11px; color: var(--text-secondary); width: 32px; text-align: center;" id="zoomLevelLabel">1x</span>
-            <button class="icon-btn" id="btnZoomIn" title="Zoom In Timeline">+</button>
+
+          <!-- Right: Audio Ducking & Zoom Controls -->
+          <div class="toolbar-right-group">
+            <div class="audio-ducking-indicator">
+              <span>Ducking:</span>
+              <div class="ducking-pill" id="duckingPill">100% Vol</div>
+            </div>
+            <div class="timeline-zoom-controls">
+              <button class="icon-btn" id="btnZoomOut" title="Zoom Out Timeline">-</button>
+              <span style="font-size: 11px; color: var(--text-secondary); width: 32px; text-align: center;" id="zoomLevelLabel">1x</span>
+              <button class="icon-btn" id="btnZoomIn" title="Zoom In Timeline">+</button>
+            </div>
           </div>
         </div>
 
         <!-- Tracks Canvas Area -->
         <div class="tracks-scroll-area" id="tracksContainer">
-          <!-- Playhead Needle Line -->
+          <!-- Playhead Needle Line (Strictly confined inside tracks area) -->
           <div class="playhead-needle" id="playhead"></div>
 
           <!-- Ruler -->
@@ -551,34 +554,34 @@
       "voice": "am_eric",
       "speed": 1.05,
       "volume": 1.2,
-      "text": "When this little girl was having trouble reaching the basketball hoop, her older brother stepped in."
+      "text": "Enter your opening commentary or story hook here."
     },
     {
-      "timestamp_sec": 12.0,
+      "timestamp_sec": 8.0,
       "voice": "am_eric",
       "speed": 1.05,
       "volume": 1.2,
-      "text": "He lifted her up so she could make the winning shot, proving older brothers really are the best."
+      "text": "Enter your key narrative, punchline, or concluding takeaway here."
     }
   ],
   "audio_ducking": [
     {
       "start_sec": 0.0,
-      "end_sec": 6.5,
+      "end_sec": 6.0,
       "original_volume": 0.25,
-      "description": "Duck background volume during commentary hook"
+      "description": "Duck background video volume during opening voiceover"
     },
     {
-      "start_sec": 6.5,
-      "end_sec": 11.5,
+      "start_sec": 6.0,
+      "end_sec": 8.0,
       "original_volume": 1.0,
-      "description": "Full volume for cheering and crowd sound"
+      "description": "Restore 100% full original video audio during natural action"
     },
     {
-      "start_sec": 11.5,
-      "end_sec": 18.0,
+      "start_sec": 8.0,
+      "end_sec": 14.0,
       "original_volume": 0.25,
-      "description": "Duck background volume during closing commentary"
+      "description": "Duck background video volume during closing voiceover"
     }
   ],
   "captions": {
@@ -593,13 +596,13 @@
     "segments": [
       {
         "start_sec": 0.5,
-        "end_sec": 6.5,
-        "text": "When this little girl couldn't reach the hoop..."
+        "end_sec": 6.0,
+        "text": "Enter your opening commentary or story hook here."
       },
       {
-        "start_sec": 12.0,
-        "end_sec": 18.0,
-        "text": "Her older brother gave her a moment she'd never forget."
+        "start_sec": 8.0,
+        "end_sec": 14.0,
+        "text": "Enter your key narrative, punchline, or concluding takeaway here."
       }
     ]
   },
