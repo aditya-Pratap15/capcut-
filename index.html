@@ -12,7 +12,7 @@
   <header class="app-header">
     <div class="logo-group">
       <span class="logo-badge">OMNICUT</span>
-      <h1 class="app-title">Studio AI <span class="version-tag">v2.0 Master</span></h1>
+      <h1 class="app-title">Studio AI <span class="version-tag">v2.1 Pro</span></h1>
     </div>
 
     <!-- Center: Aspect Ratio Toggle -->
@@ -51,10 +51,10 @@
     
     <!-- Left Sidebar: Controls & Inspector -->
     <aside class="sidebar-panel">
-      <!-- Tabs Navigation -->
+      <!-- 2-Row Grid Tabs Navigation (Zero Horizontal Overflow) -->
       <nav class="sidebar-tabs">
-        <button class="tab-btn active" data-tab="instructions">📋 Recipe JSON</button>
-        <button class="tab-btn" data-tab="voiceover">🎙️ TTS Voice</button>
+        <button class="tab-btn active" data-tab="instructions">📋 Recipe</button>
+        <button class="tab-btn" data-tab="voiceover">🎙️ Voiceover</button>
         <button class="tab-btn" data-tab="captions">💬 Captions</button>
         <button class="tab-btn" data-tab="ducking">🔊 Ducking</button>
         <button class="tab-btn" data-tab="face">🎭 Face Blur</button>
@@ -71,7 +71,7 @@
             <option value="privacy">Face Privacy Blur</option>
           </select>
         </div>
-        <p class="panel-desc">Paste or edit your instruction JSON below. Click "Execute Recipe" to sync all tracks, timestamps, and audio ducking instantly.</p>
+        <p class="panel-desc">Instruction-based editing: define timestamps, speech, and ducking levels in JSON to auto-build your timeline.</p>
 
         <div class="form-group">
           <textarea id="jsonEditor" class="form-control json-editor-area" spellcheck="false"></textarea>
@@ -88,7 +88,7 @@
       <!-- Tab 2: Voiceover / TTS -->
       <div class="tab-content" id="tab-voiceover">
         <h3 class="panel-title">Voiceover Generator</h3>
-        <p class="panel-desc">Generate narrative commentary using broadcast voice profiles or browser speech synthesis.</p>
+        <p class="panel-desc">Commentary audio with broadcast profiles and real-time in-browser speech auditioning.</p>
 
         <div class="form-group">
           <label>Speaker Model</label>
@@ -102,7 +102,7 @@
 
         <div class="form-group">
           <label>Timestamp Placement (seconds)</label>
-          <input type="number" id="voTimestamp" class="form-control" value="0.5" step="0.1" min="0">
+          <input type="number" id="voTimestamp" class="form-control" value="0.2" step="0.1" min="0">
         </div>
 
         <div class="form-group">
@@ -110,11 +110,16 @@
           <textarea id="voText" class="form-control" rows="3" placeholder="Enter narration script..."></textarea>
         </div>
 
-        <button class="btn btn-primary" id="btnAddVO" style="width: 100%;">
-          <span>+ Add Voiceover to Timeline</span>
-        </button>
+        <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+          <button class="btn btn-primary" id="btnAddVO" style="flex: 1;">
+            <span>+ Add to Track</span>
+          </button>
+          <button class="btn btn-secondary" id="btnTestTTS" title="Test speak current text">
+            <span>🔊 Audition</span>
+          </button>
+        </div>
 
-        <div style="margin-top: 16px;">
+        <div>
           <label style="font-size: 11px; font-weight: bold; color: var(--text-secondary);">ACTIVE VOICEOVER CLIPS</label>
           <div id="voList" style="margin-top: 8px; display: flex; flex-direction: column; gap: 6px;"></div>
         </div>
@@ -124,6 +129,16 @@
       <div class="tab-content" id="tab-captions">
         <h3 class="panel-title">Kinetic Subtitles</h3>
         <p class="panel-desc">Dynamic animated captions with word-by-word highlights and pop animation.</p>
+
+        <div class="form-group">
+          <label>Preset Style</label>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+            <button class="btn btn-secondary" id="btnStyleHormozi" style="font-size: 10px; justify-content: center;">🔥 Hormozi Pop</button>
+            <button class="btn btn-secondary" id="btnStyleDylan" style="font-size: 10px; justify-content: center;">🎙️ Dylan Clean</button>
+            <button class="btn btn-secondary" id="btnStyleNeon" style="font-size: 10px; justify-content: center;">⚡ Cyan Glow</button>
+            <button class="btn btn-secondary" id="btnStyleClassic" style="font-size: 10px; justify-content: center;">📝 Classic White</button>
+          </div>
+        </div>
 
         <div class="form-group">
           <label>Animation Style</label>
@@ -138,17 +153,17 @@
         <div style="display: flex; gap: 10px;">
           <div class="form-group" style="flex: 1;">
             <label>Highlight Color</label>
-            <input type="color" id="captionHighlightColor" class="form-control" value="#FFDF00" style="height: 36px; padding: 2px;">
+            <input type="color" id="captionHighlightColor" class="form-control" value="#FFDF00" style="height: 34px; padding: 2px;">
           </div>
           <div class="form-group" style="flex: 1;">
             <label>Font Size</label>
-            <input type="number" id="captionFontSize" class="form-control" value="38" min="16" max="90">
+            <input type="number" id="captionFontSize" class="form-control" value="40" min="16" max="90">
           </div>
         </div>
 
         <div class="form-group">
-          <label>Caption Text Preview</label>
-          <input type="text" id="captionSampleInput" class="form-control" value="When this little girl couldn't reach the hoop...">
+          <label>Position Y (% of height)</label>
+          <input type="range" id="captionPosY" min="10" max="90" value="78" style="width: 100%;">
         </div>
       </div>
 
@@ -203,11 +218,24 @@
         <h3 class="panel-title">Watermark Cover</h3>
         <p class="panel-desc">Define a tracked blur box over logos, usernames, or moving watermark text.</p>
 
+        <div style="background: rgba(0, 242, 254, 0.1); border: 1px solid rgba(0, 242, 254, 0.3); padding: 8px 10px; border-radius: 6px; font-size: 11px; color: var(--accent-cyan); margin-bottom: 12px;">
+          💡 <strong>Direct Control:</strong> You can click & drag the watermark box and corner handles directly on the video screen!
+        </div>
+
         <div class="form-group">
           <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
             <input type="checkbox" id="chkEnableWatermark" checked>
             <span>Enable Watermark Mask</span>
           </label>
+        </div>
+
+        <div class="form-group">
+          <label>Cover Style</label>
+          <select id="wmModeSelect" class="form-control">
+            <option value="mosaic">Pixelated Mosaic (Best Text Cover)</option>
+            <option value="blur">Gaussian Glass Blur</option>
+            <option value="solid">Dark Frosted Tint</option>
+          </select>
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
@@ -253,14 +281,16 @@
         <div class="timecode-display" id="timecodeDisplay">00:00.00 / 00:00.00</div>
       </div>
 
-      <!-- Timeline & Multi-Track Scrubber -->
+      <!-- Timeline & Multi-Track Scrubber (FIXED & ALWAYS VISIBLE) -->
       <div class="timeline-panel">
         <div class="timeline-toolbar">
           <div class="timeline-tool-group">
-            <span style="font-size: 11px; font-weight: bold; color: var(--text-secondary);">TIMELINE TRACKS</span>
+            <button class="timeline-btn" id="btnSplitClip" title="Split clip at playhead">✂️ Split</button>
+            <button class="timeline-btn" id="btnToggleSnap" title="Snap to seconds">🧲 Snap: ON</button>
+            <button class="timeline-btn" id="btnClearVO" title="Clear all voiceover clips">🗑️ Clear VO</button>
           </div>
           <div class="zoom-slider-wrap">
-            <span>Timeline Zoom</span>
+            <span>Zoom</span>
             <input type="range" id="timelineZoom" min="15" max="80" value="35">
           </div>
         </div>
