@@ -26,6 +26,11 @@
 
     <!-- Right Header Actions -->
     <div class="header-actions">
+      <button class="btn btn-help" id="btnHelpModal" title="Click to view detailed JSON format instructions">
+        <span class="help-glow-icon">💡</span>
+        <span>JSON Format Help</span>
+      </button>
+
       <input type="file" id="videoUploadInput" accept="video/*" style="display: none;">
       <button class="btn btn-secondary" id="btnUploadVideo">
         <span>📁 Load Video</span>
@@ -51,7 +56,7 @@
     
     <!-- Left Sidebar: Controls & Inspector -->
     <aside class="sidebar-panel">
-      <!-- 2-Row Grid Tabs Navigation (Zero Horizontal Overflow) -->
+      <!-- 2-Row Grid Tabs Navigation -->
       <nav class="sidebar-tabs">
         <button class="tab-btn active" data-tab="instructions">📋 Recipe</button>
         <button class="tab-btn" data-tab="voiceover">🎙️ Voiceover</button>
@@ -65,16 +70,23 @@
       <div class="tab-content active" id="tab-instructions">
         <div class="panel-title">
           <span>Instruction Recipe</span>
-          <select id="presetSelect" class="form-control" style="width: 140px; padding: 4px;">
-            <option value="dylan">Dylan Storyteller</option>
-            <option value="meme">Fast TikTok Cut</option>
-            <option value="privacy">Face Privacy Blur</option>
-          </select>
+          <button class="btn btn-secondary btn-sm" id="btnHelpFromTab" style="font-size: 11px; padding: 4px 8px;">
+            <span>💡 Format Guide</span>
+          </button>
         </div>
-        <p class="panel-desc">Instruction-based editing: define timestamps, speech, and ducking levels in JSON to auto-build your timeline.</p>
+        <p class="panel-desc">Instruction-based editing: define commentary timestamps, Kokoro voice, audio ducking, and kinetic captions in JSON to auto-build your timeline.</p>
+
+        <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+          <button class="btn btn-secondary btn-sm" id="btnLoadStarterTemplate" style="flex: 1; font-size: 11px;">
+            <span>📄 Load Starter Schema</span>
+          </button>
+          <button class="btn btn-secondary btn-sm" id="btnClearRecipe" style="flex: 1; font-size: 11px;">
+            <span>🗑️ Clear Recipe</span>
+          </button>
+        </div>
 
         <div class="form-group">
-          <textarea id="jsonEditor" class="form-control json-editor-area" spellcheck="false"></textarea>
+          <textarea id="jsonEditor" class="form-control json-editor-area" spellcheck="false" placeholder="Paste your instruction JSON recipe here..."></textarea>
         </div>
 
         <div style="display: flex; gap: 8px;">
@@ -88,151 +100,181 @@
       <!-- Tab 2: Voiceover / TTS -->
       <div class="tab-content" id="tab-voiceover">
         <h3 class="panel-title">Voiceover Generator</h3>
-        <p class="panel-desc">Commentary audio with broadcast profiles and real-time in-browser speech auditioning.</p>
+        <p class="panel-desc">Generate narration using Kokoro TTS model (Warm Broadcaster: <code>am_eric</code>) or audition directly in browser.</p>
 
         <div class="form-group">
-          <label>Speaker Model</label>
+          <label>Voice Model</label>
           <select id="voVoiceSelect" class="form-control">
-            <option value="am_eric">am_eric (Kokoro - Warm Broadcaster)</option>
-            <option value="am_adam">am_adam (Kokoro - Energetic Male)</option>
-            <option value="af_heart">af_heart (Kokoro - Warm Storyteller)</option>
-            <option value="browser">Browser Native Speech Synthesis</option>
+            <option value="am_eric" selected>am_eric (US Warm Broadcaster - Recommended)</option>
+            <option value="am_adam">am_adam (US Deep Punchy)</option>
+            <option value="af_bella">af_bella (US Expressive Female)</option>
+            <option value="af_nicole">af_nicole (US Soft Storyteller)</option>
+            <option value="bf_emma">bf_emma (British Narrator)</option>
           </select>
         </div>
 
-        <div class="form-group">
-          <label>Timestamp Placement (seconds)</label>
-          <input type="number" id="voTimestamp" class="form-control" value="0.2" step="0.1" min="0">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <div class="form-group">
+            <label>Speed: <span id="valVOSpeed">1.05x</span></label>
+            <input type="range" id="voSpeedRange" min="0.75" max="1.5" step="0.05" value="1.05">
+          </div>
+          <div class="form-group">
+            <label>Volume: <span id="valVOVolume">120%</span></label>
+            <input type="range" id="voVolumeRange" min="0.5" max="2.0" step="0.1" value="1.2">
+          </div>
         </div>
 
         <div class="form-group">
-          <label>Script Text</label>
-          <textarea id="voText" class="form-control" rows="3" placeholder="Enter narration script..."></textarea>
+          <label>Commentary Cue Script</label>
+          <textarea id="voScriptInput" class="form-control" rows="3" placeholder="Enter commentary line for current playhead position..."></textarea>
         </div>
 
-        <div style="display: flex; gap: 8px; margin-bottom: 12px;">
-          <button class="btn btn-primary" id="btnAddVO" style="flex: 1;">
-            <span>+ Add to Track</span>
+        <div style="display: flex; gap: 8px; margin-bottom: 14px;">
+          <button class="btn btn-primary" id="btnAddVOClip" style="flex: 1;">
+            <span>+ Add at Playhead (<span id="btnVOCurTime">0.0s</span>)</span>
           </button>
-          <button class="btn btn-secondary" id="btnTestTTS" title="Test speak current text">
+          <button class="btn btn-secondary" id="btnAuditionVO" title="Preview speech in browser with ducking">
             <span>🔊 Audition</span>
           </button>
         </div>
 
-        <div>
-          <label style="font-size: 11px; font-weight: bold; color: var(--text-secondary);">ACTIVE VOICEOVER CLIPS</label>
-          <div id="voList" style="margin-top: 8px; display: flex; flex-direction: column; gap: 6px;"></div>
+        <div class="panel-title" style="margin-top: 14px;">Commentary Cues on Timeline</div>
+        <div class="item-list-container" id="voItemsList">
+          <!-- Dynamically populated -->
         </div>
       </div>
 
-      <!-- Tab 3: Kinetic Captions -->
+      <!-- Tab 3: Dynamic Captions & Subtitles -->
       <div class="tab-content" id="tab-captions">
         <h3 class="panel-title">Kinetic Subtitles</h3>
-        <p class="panel-desc">Dynamic animated captions with word-by-word highlights and pop animation.</p>
+        <p class="panel-desc">Customize kinetic text animation, typography, and highlight colors.</p>
+
+        <!-- 1-Click Styling Presets -->
+        <label style="font-size: 11px; color: var(--text-secondary); margin-bottom: 6px; display: block;">1-Click Caption Presets</label>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 12px;">
+          <button class="btn btn-secondary btn-sm" id="btnStyleHormozi" style="font-size: 11px; padding: 6px;">🟡 Hormozi Pop</button>
+          <button class="btn btn-secondary btn-sm" id="btnStyleDylan" style="font-size: 11px; padding: 6px;">⚪ Dylan Clean</button>
+          <button class="btn btn-secondary btn-sm" id="btnStyleCyanGlow" style="font-size: 11px; padding: 6px;">🔵 Cyan Glow</button>
+          <button class="btn btn-secondary btn-sm" id="btnStyleClassic" style="font-size: 11px; padding: 6px;">📄 Classic White</button>
+        </div>
 
         <div class="form-group">
-          <label>Preset Style</label>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
-            <button class="btn btn-secondary" id="btnStyleHormozi" style="font-size: 10px; justify-content: center;">🔥 Hormozi Pop</button>
-            <button class="btn btn-secondary" id="btnStyleDylan" style="font-size: 10px; justify-content: center;">🎙️ Dylan Clean</button>
-            <button class="btn btn-secondary" id="btnStyleNeon" style="font-size: 10px; justify-content: center;">⚡ Cyan Glow</button>
-            <button class="btn btn-secondary" id="btnStyleClassic" style="font-size: 10px; justify-content: center;">📝 Classic White</button>
+          <label>Font Family</label>
+          <select id="captionFontSelect" class="form-control">
+            <option value="Impact, Inter, sans-serif">Impact Bold (Viral Shorts / Dylan)</option>
+            <option value="'Arial Black', sans-serif">Arial Black (Heavy Punchy)</option>
+            <option value="Inter, sans-serif">Inter SemiBold (Clean Minimal)</option>
+            <option value="'Montserrat', sans-serif">Montserrat Heavy</option>
+          </select>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <div class="form-group">
+            <label>Text Color</label>
+            <input type="color" id="captionTextColor" class="form-control" value="#FFFFFF" style="padding: 2px; height: 32px;">
+          </div>
+          <div class="form-group">
+            <label>Highlight Color</label>
+            <input type="color" id="captionHighlightColor" class="form-control" value="#FFDF00" style="padding: 2px; height: 32px;">
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <div class="form-group">
+            <label>Font Size (px)</label>
+            <input type="number" id="captionFontSize" class="form-control" value="42" min="16" max="100">
+          </div>
+          <div class="form-group">
+            <label>Y-Position (%)</label>
+            <input type="number" id="captionPosY" class="form-control" value="78" min="10" max="95">
           </div>
         </div>
 
         <div class="form-group">
           <label>Animation Style</label>
           <select id="captionAnimSelect" class="form-control">
-            <option value="pop_bounce">Pop & Scale Bounce (Viral)</option>
-            <option value="glow">Neon Glow Pulse</option>
-            <option value="typewriter">Typewriter Reveal</option>
-            <option value="karaoke">Karaoke Highlight</option>
+            <option value="pop_bounce">Word Pop & Elastic Bounce</option>
+            <option value="karaoke_highlight">Word-by-Word Karaoke Fill</option>
+            <option value="fade_smooth">Smooth Fade & Scale</option>
+            <option value="static">Static Subtitle</option>
           </select>
-        </div>
-
-        <div style="display: flex; gap: 10px;">
-          <div class="form-group" style="flex: 1;">
-            <label>Highlight Color</label>
-            <input type="color" id="captionHighlightColor" class="form-control" value="#FFDF00" style="height: 34px; padding: 2px;">
-          </div>
-          <div class="form-group" style="flex: 1;">
-            <label>Font Size</label>
-            <input type="number" id="captionFontSize" class="form-control" value="40" min="16" max="90">
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>Position Y (% of height)</label>
-          <input type="range" id="captionPosY" min="10" max="90" value="78" style="width: 100%;">
         </div>
       </div>
 
       <!-- Tab 4: Audio Ducking -->
       <div class="tab-content" id="tab-ducking">
-        <h3 class="panel-title">Smart Audio Ducking</h3>
-        <p class="panel-desc">Automatically lowers original background video audio while the voiceover is speaking, restoring full volume for live reactions.</p>
+        <h3 class="panel-title">Automated Audio Ducking</h3>
+        <p class="panel-desc">Lower video background audio automatically while voiceover plays, then restore full volume during action.</p>
 
         <div class="form-group">
-          <label>Ducked Volume Level</label>
-          <input type="range" id="duckLevelSlider" min="0" max="1" step="0.05" value="0.25" style="width: 100%;">
-          <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-secondary); margin-top: 4px;">
-            <span>0% (Muted)</span>
-            <span id="duckLevelLabel">25% (-12 dB)</span>
-            <span>100% (No Duck)</span>
+          <label>Ducked Original Volume: <span id="valDuckVolume">25%</span></label>
+          <input type="range" id="duckVolumeRange" min="0" max="1" step="0.05" value="0.25">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <div class="form-group">
+            <label>Start Sec</label>
+            <input type="number" id="duckStartSec" class="form-control" value="0.0" step="0.1">
+          </div>
+          <div class="form-group">
+            <label>End Sec</label>
+            <input type="number" id="duckEndSec" class="form-control" value="6.5" step="0.1">
           </div>
         </div>
 
-        <div id="duckingRulesContainer" style="margin-top: 14px; display: flex; flex-direction: column; gap: 8px;"></div>
+        <button class="btn btn-primary" id="btnAddDuckingRule" style="width: 100%; margin-bottom: 14px;">
+          <span>+ Add Ducking Interval</span>
+        </button>
+
+        <div class="panel-title">Configured Ducking Intervals</div>
+        <div class="item-list-container" id="duckingRulesList">
+          <!-- Dynamically populated -->
+        </div>
       </div>
 
-      <!-- Tab 5: Face Tracking & Privacy -->
+      <!-- Tab 5: Face Tracking & Blur -->
       <div class="tab-content" id="tab-face">
-        <h3 class="panel-title">Face Tracking & Blur</h3>
+        <h3 class="panel-title">Face Tracking & Privacy Blur</h3>
         <p class="panel-desc">Automatic face detection with tracking blur, mosaic pixelation, or stickers.</p>
 
         <div class="form-group">
           <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-            <input type="checkbox" id="chkEnableFace">
-            <span>Enable Face Tracking</span>
+            <input type="checkbox" id="enableFace" style="width: 16px; height: 16px;">
+            <span style="font-weight: 600;">Enable Face Tracking</span>
           </label>
         </div>
 
         <div class="form-group">
           <label>Blur Mode</label>
-          <select id="faceBlurMode" class="form-control">
-            <option value="gaussian">Gaussian Soft Blur</option>
-            <option value="pixelate">Pixelated Mosaic</option>
-            <option value="censor">Black Censor Bar</option>
-            <option value="emoji">Funny Emoji Mask</option>
+          <select id="faceModeSelect" class="form-control">
+            <option value="gaussian">Soft Gaussian Privacy Blur</option>
+            <option value="mosaic">Heavy Pixelated Mosaic</option>
+            <option value="emoji">Smiley Face Sticker</option>
           </select>
         </div>
 
         <div class="form-group">
           <label>Blur Radius</label>
-          <input type="range" id="faceBlurRadius" min="5" max="40" value="18" style="width: 100%;">
+          <input type="range" id="faceRadiusRange" min="5" max="50" value="20">
         </div>
       </div>
 
-      <!-- Tab 6: Watermark Remover -->
+      <!-- Tab 6: Moving Watermark Removal -->
       <div class="tab-content" id="tab-watermark">
-        <h3 class="panel-title">Watermark Cover</h3>
-        <p class="panel-desc">Define a tracked blur box over logos, usernames, or moving watermark text.</p>
-
-        <div style="background: rgba(0, 242, 254, 0.1); border: 1px solid rgba(0, 242, 254, 0.3); padding: 8px 10px; border-radius: 6px; font-size: 11px; color: var(--accent-cyan); margin-bottom: 12px;">
-          💡 <strong>Direct Control:</strong> You can click & drag the watermark box and corner handles directly on the video screen!
-        </div>
+        <h3 class="panel-title">Watermark Cover & Inpainting</h3>
+        <p class="panel-desc">Drag the box directly on screen or adjust coordinates to mask moving watermarks.</p>
 
         <div class="form-group">
           <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-            <input type="checkbox" id="chkEnableWatermark" checked>
-            <span>Enable Watermark Mask</span>
+            <input type="checkbox" id="enableWatermark" style="width: 16px; height: 16px;">
+            <span style="font-weight: 600;">Enable Watermark Removal</span>
           </label>
         </div>
 
         <div class="form-group">
           <label>Cover Style</label>
           <select id="wmModeSelect" class="form-control">
-            <option value="mosaic">Pixelated Mosaic (Best Text Cover)</option>
+            <option value="mosaic" selected>Pixelated Mosaic (Best Text Cover)</option>
             <option value="blur">Gaussian Glass Blur</option>
             <option value="solid">Dark Frosted Tint</option>
           </select>
@@ -241,11 +283,11 @@
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
           <div class="form-group">
             <label>X Position (%)</label>
-            <input type="number" id="wmX" class="form-control" value="72" min="0" max="100">
+            <input type="number" id="wmX" class="form-control" value="70" min="0" max="100">
           </div>
           <div class="form-group">
             <label>Y Position (%)</label>
-            <input type="number" id="wmY" class="form-control" value="4" min="0" max="100">
+            <input type="number" id="wmY" class="form-control" value="5" min="0" max="100">
           </div>
           <div class="form-group">
             <label>Width (%)</label>
@@ -253,7 +295,7 @@
           </div>
           <div class="form-group">
             <label>Height (%)</label>
-            <input type="number" id="wmH" class="form-control" value="6" min="1" max="100">
+            <input type="number" id="wmH" class="form-control" value="8" min="1" max="100">
           </div>
         </div>
       </div>
@@ -266,6 +308,16 @@
         <div class="player-box ratio-9-16" id="playerWrapper">
           <video id="mainVideo" playsinline></video>
           <canvas id="overlayCanvas"></canvas>
+
+          <!-- Empty Stage Prompt (Shows until video is loaded) -->
+          <div class="empty-stage-prompt" id="emptyStagePrompt">
+            <div class="empty-stage-icon">🎬</div>
+            <h3 class="empty-stage-title">No Video Loaded</h3>
+            <p class="empty-stage-desc">Drag & drop your MP4/WebM video here, or click below to select a video file.</p>
+            <button class="btn btn-primary" id="btnStageUpload" style="font-size: 12px; padding: 8px 16px;">
+              <span>📁 Choose Video File</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -278,25 +330,33 @@
           <button class="icon-btn" id="btnMuteToggle" title="Mute Toggle">🔊</button>
         </div>
 
-        <div class="timecode-display" id="timecodeDisplay">00:00.00 / 00:00.00</div>
+        <div class="timecode-display" id="timecodeDisplay">00:00.0 / 00:00.0</div>
+
+        <div class="audio-ducking-indicator">
+          <span>Ducking:</span>
+          <div class="ducking-pill" id="duckingPill">100% Vol</div>
+        </div>
       </div>
 
-      <!-- Timeline & Multi-Track Scrubber (FIXED & ALWAYS VISIBLE) -->
+      <!-- Multi-Track Timeline Panel -->
       <div class="timeline-panel">
         <div class="timeline-toolbar">
-          <div class="timeline-tool-group">
-            <button class="timeline-btn" id="btnSplitClip" title="Split clip at playhead">✂️ Split</button>
-            <button class="timeline-btn" id="btnToggleSnap" title="Snap to seconds">🧲 Snap: ON</button>
-            <button class="timeline-btn" id="btnClearVO" title="Clear all voiceover clips">🗑️ Clear VO</button>
+          <div class="timeline-tools-left">
+            <span class="timeline-title">Multi-Track Timeline</span>
+            <button class="btn btn-secondary btn-sm" id="btnTimelineSplit" title="Split clip at playhead">✂️ Split</button>
+            <button class="btn btn-secondary btn-sm" id="btnTimelineSnap" title="Toggle magnetic snapping">🧲 Snap: ON</button>
+            <button class="btn btn-secondary btn-sm" id="btnClearVO" title="Clear all voiceover clips">🗑️ Clear VO</button>
           </div>
-          <div class="zoom-slider-wrap">
-            <span>Zoom</span>
-            <input type="range" id="timelineZoom" min="15" max="80" value="35">
+          <div class="timeline-zoom-controls">
+            <button class="icon-btn" id="btnZoomOut" title="Zoom Out Timeline">-</button>
+            <span style="font-size: 11px; color: var(--text-secondary); width: 32px; text-align: center;" id="zoomLevelLabel">1x</span>
+            <button class="icon-btn" id="btnZoomIn" title="Zoom In Timeline">+</button>
           </div>
         </div>
 
-        <div class="tracks-container" id="tracksContainer">
-          <!-- Playhead needle -->
+        <!-- Tracks Canvas Area -->
+        <div class="tracks-scroll-area" id="tracksContainer">
+          <!-- Playhead Needle Line -->
           <div class="playhead-needle" id="playhead"></div>
 
           <!-- Ruler -->
@@ -336,6 +396,245 @@
     </section>
 
   </main>
+
+  <!-- Detailed JSON Format Instruction Guide Modal -->
+  <div class="modal-overlay" id="instructionHelpModal">
+    <div class="modal-card modal-help-card">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title">📖 JSON Instruction Format Specification</h3>
+          <p class="modal-subtitle">How to format your instruction JSON file for automated commentary, ducking, and captions</p>
+        </div>
+        <button class="close-modal-btn" id="btnCloseHelpModal" title="Close (Esc)">✕</button>
+      </div>
+
+      <div class="help-modal-body">
+        <!-- Introduction -->
+        <div class="help-section intro-box">
+          <h4>💡 How OmniCut Instruction Editing Works</h4>
+          <p>
+            OmniCut is an <strong>instruction-driven video editing engine</strong>. Instead of manually slicing audio and dragging subtitles on a timeline, you provide an instruction JSON file that defines commentary scripts, timestamps, ducking levels, and styles. OmniCut parses and executes everything automatically.
+          </p>
+        </div>
+
+        <!-- Schema Table -->
+        <div class="help-section">
+          <h4>📑 JSON Schema & Properties Explained</h4>
+          <div class="schema-table-wrapper">
+            <table class="schema-table">
+              <thead>
+                <tr>
+                  <th>Property Key</th>
+                  <th>Type</th>
+                  <th>Description</th>
+                  <th>Example</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>metadata.project_name</code></td>
+                  <td>String</td>
+                  <td>Project name used when exporting files.</td>
+                  <td><code>"My_Story_Edit"</code></td>
+                </tr>
+                <tr>
+                  <td><code>metadata.target_ratio</code></td>
+                  <td>String</td>
+                  <td>Aspect ratio: <code>"9:16"</code> (Shorts/Reels), <code>"16:9"</code> (Landscape), <code>"1:1"</code> (Square).</td>
+                  <td><code>"9:16"</code></td>
+                </tr>
+                <tr>
+                  <td><code>metadata.fps</code></td>
+                  <td>Number</td>
+                  <td>Target frame rate (typically <code>30</code> or <code>60</code>).</td>
+                  <td><code>30</code></td>
+                </tr>
+                <tr>
+                  <td><code>voiceover[].timestamp_sec</code></td>
+                  <td>Float</td>
+                  <td>Exact second in the video when speech begins.</td>
+                  <td><code>0.5</code></td>
+                </tr>
+                <tr>
+                  <td><code>voiceover[].voice</code></td>
+                  <td>String</td>
+                  <td>Kokoro voice ID: <code>"am_eric"</code> (Warm Broadcaster), <code>"am_adam"</code>, <code>"af_bella"</code>, <code>"af_nicole"</code>.</td>
+                  <td><code>"am_eric"</code></td>
+                </tr>
+                <tr>
+                  <td><code>voiceover[].speed</code></td>
+                  <td>Float</td>
+                  <td>Speech speed multiplier (1.0 = standard, 1.05 = engaging Shorts pace).</td>
+                  <td><code>1.05</code></td>
+                </tr>
+                <tr>
+                  <td><code>voiceover[].volume</code></td>
+                  <td>Float</td>
+                  <td>Voice volume multiplier (1.0 = normal, 1.2 = clear loud commentary).</td>
+                  <td><code>1.2</code></td>
+                </tr>
+                <tr>
+                  <td><code>voiceover[].text</code></td>
+                  <td>String</td>
+                  <td>The commentary script or narration sentence to speak.</td>
+                  <td><code>"When this stranger stepped in..."</code></td>
+                </tr>
+                <tr>
+                  <td><code>audio_ducking[].start_sec</code></td>
+                  <td>Float</td>
+                  <td>Timestamp when background video audio drops.</td>
+                  <td><code>0.0</code></td>
+                </tr>
+                <tr>
+                  <td><code>audio_ducking[].end_sec</code></td>
+                  <td>Float</td>
+                  <td>Timestamp when background video audio returns to full.</td>
+                  <td><code>6.5</code></td>
+                </tr>
+                <tr>
+                  <td><code>audio_ducking[].original_volume</code></td>
+                  <td>Float</td>
+                  <td>Target background volume: <code>0.2</code> (20% background), <code>1.0</code> (100% full volume), <code>0.0</code> (mute).</td>
+                  <td><code>0.25</code></td>
+                </tr>
+                <tr>
+                  <td><code>captions.style</code></td>
+                  <td>Object</td>
+                  <td>Styles: <code>font_family</code>, <code>font_size_px</code>, <code>text_color</code>, <code>highlight_color</code>, <code>animation</code>, <code>position_y_percent</code>.</td>
+                  <td><code>{"font_size_px": 42}</code></td>
+                </tr>
+                <tr>
+                  <td><code>captions.segments[]</code></td>
+                  <td>Array</td>
+                  <td>Subtitle cues with <code>start_sec</code>, <code>end_sec</code>, and <code>text</code>.</td>
+                  <td><code>{"start_sec": 0.5, "end_sec": 5.0, "text": "..."}</code></td>
+                </tr>
+                <tr>
+                  <td><code>effects.watermark_removal[]</code></td>
+                  <td>Array</td>
+                  <td>Box coordinates: <code>start_sec</code>, <code>end_sec</code>, <code>x_percent</code>, <code>y_percent</code>, <code>width_percent</code>, <code>height_percent</code>, <code>mode</code>.</td>
+                  <td><code>{"x_percent": 70, "mode": "mosaic"}</code></td>
+                </tr>
+                <tr>
+                  <td><code>effects.face_tracking</code></td>
+                  <td>Object</td>
+                  <td>Privacy face blur: <code>enabled</code> (boolean), <code>mode</code> (<code>"gaussian"</code>), <code>blur_radius_px</code>.</td>
+                  <td><code>{"enabled": false}</code></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Copyable Template -->
+        <div class="help-section">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+            <h4 style="margin: 0;">📋 Complete JSON Template (Copy & Customize)</h4>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn btn-secondary btn-sm" id="btnCopyHelpJSON">
+                <span>📋 Copy JSON</span>
+              </button>
+              <button class="btn btn-primary btn-sm" id="btnInsertTemplateToEditor">
+                <span>📥 Insert into Editor</span>
+              </button>
+            </div>
+          </div>
+          <pre class="help-code-block" id="helpJsonSampleBlock"><code>{
+  "metadata": {
+    "project_name": "My_Story_Edit",
+    "target_ratio": "9:16",
+    "fps": 30
+  },
+  "voiceover": [
+    {
+      "timestamp_sec": 0.5,
+      "voice": "am_eric",
+      "speed": 1.05,
+      "volume": 1.2,
+      "text": "When this little girl was having trouble reaching the basketball hoop, her older brother stepped in."
+    },
+    {
+      "timestamp_sec": 12.0,
+      "voice": "am_eric",
+      "speed": 1.05,
+      "volume": 1.2,
+      "text": "He lifted her up so she could make the winning shot, proving older brothers really are the best."
+    }
+  ],
+  "audio_ducking": [
+    {
+      "start_sec": 0.0,
+      "end_sec": 6.5,
+      "original_volume": 0.25,
+      "description": "Duck background volume during commentary hook"
+    },
+    {
+      "start_sec": 6.5,
+      "end_sec": 11.5,
+      "original_volume": 1.0,
+      "description": "Full volume for cheering and crowd sound"
+    },
+    {
+      "start_sec": 11.5,
+      "end_sec": 18.0,
+      "original_volume": 0.25,
+      "description": "Duck background volume during closing commentary"
+    }
+  ],
+  "captions": {
+    "style": {
+      "font_family": "Impact, Inter, sans-serif",
+      "font_size_px": 42,
+      "text_color": "#FFFFFF",
+      "highlight_color": "#FFDF00",
+      "animation": "pop_bounce",
+      "position_y_percent": 78
+    },
+    "segments": [
+      {
+        "start_sec": 0.5,
+        "end_sec": 6.5,
+        "text": "When this little girl couldn't reach the hoop..."
+      },
+      {
+        "start_sec": 12.0,
+        "end_sec": 18.0,
+        "text": "Her older brother gave her a moment she'd never forget."
+      }
+    ]
+  },
+  "effects": {
+    "watermark_removal": [
+      {
+        "start_sec": 0.0,
+        "end_sec": 20.0,
+        "x_percent": 70,
+        "y_percent": 5,
+        "width_percent": 26,
+        "height_percent": 7,
+        "mode": "mosaic"
+      }
+    ],
+    "face_tracking": {
+      "enabled": false,
+      "mode": "gaussian",
+      "blur_radius_px": 20
+    }
+  }
+}</code></pre>
+        </div>
+
+        <!-- Offline Execution -->
+        <div class="help-section offline-engine-box">
+          <h4>💻 Offline Lossless 4K Rendering via Terminal</h4>
+          <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 6px;">
+            For broadcast 4K rendering with high-quality Kokoro TTS (voice <code>am_eric</code>) and FFmpeg, run the local script:
+          </p>
+          <div class="code-box">python engine.py --video your_video.mp4 --instructions your_instructions.json --output master.mp4</div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Export Modal -->
   <div class="modal-overlay" id="exportModal">

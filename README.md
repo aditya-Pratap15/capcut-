@@ -133,7 +133,7 @@ pip install soundfile numpy kokoro
 ### 2. Execute Master Render
 Run the engine by passing your video file and instructions:
 ```bash
-python engine.py --video "my_video.mp4" --instructions "sample_instructions.json" --output "master_edit.mp4"
+python engine.py --video "my_video.mp4" --instructions "instructions.json" --output "master_edit.mp4"
 ```
 
 The script will automatically:
@@ -145,11 +145,10 @@ The script will automatically:
 
 ## 🛠️ Architecture & Extensibility
 
-* `index.html`: The multi-track CapCut-style responsive web interface.
-* `style.css`: Dark-mode studio styling with customizable color themes.
-* `app.js`: Timeline management, HTML5 Canvas renderer, kinetic pop caption engine, and live audio ducking.
+* `index.html`: The multi-track CapCut-style responsive web interface with built-in **💡 JSON Format Help** modal.
+* `style.css`: Dark-mode studio styling with fixed 100vh viewport, responsive player stage, and modal themes.
+* `app.js`: Timeline management, HTML5 Canvas renderer, kinetic pop caption engine, real mosaic inpainter, and live audio ducking.
 * `engine.py`: High-performance Python + FFmpeg CLI rendering backend.
-* `sample_instructions.json`: Ready-to-use template for viral story shorts.
 
 ## 📄 License
 MIT License — 100% Free for personal and commercial use.
